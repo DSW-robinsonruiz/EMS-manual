@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>EMS Manual - Gestor de Documentos</title>
+
+<style>
+:root{
+    --bg:#0e1a24;
+    --panel:#162635;
+    --card:#1e3346;
+    --text:#e5e7eb;
+    --muted:#94a3b8;
+    --accent:#3b82f6;
+    --danger:#ef4444;
+    --success:#22c55e;
+    --highlight:#facc15;
+}
+
+*{box-sizing:border-box;}
+
+body{
+    margin:0;
+    font-family:"Segoe UI",sans-serif;
+    background:var(--bg);
+    color:var(--text);
+}
+
+header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:14px 20px;
+    background:linear-gradient(to right,#0f2027,#203a43);
+}
+
+header input{
+    width:320px;
+    padding:10px 14px;
+    border:none;
+    border-radius:8px;
+    background:var(--panel);
+    color:var(--text);
+}
+
+.user{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-size:17px;
+    font-weight:600;
+}
+
+.user img{
+    width:44px;
+    height:44px;
+    border-radius:50%;
+}
+
+.main{
+    display:flex;
+    height:calc(100vh - 64px);
+}
+
+.sidebar{
+    width:340px;
+    background:var(--panel);
+    padding:15px;
+    overflow-y:auto;
+}
+
+.buttons{
+    display:flex;
+    gap:8px;
+    margin-bottom:12px;
+}
+
+button{
+    border:none;
+    padding:9px 14px;
+    border-radius:7px;
+    color:white;
+    cursor:pointer;
+}
+
+.new-cat{background:#16a34a;}
+.new-doc{background:#22c55e;}
+.save{background:var(--accent);}
+.delete{background:var(--danger);}
+
+.category{
+    margin-bottom:10px;
+}
+
+.category-title{
+    padding:10px;
+    background:var(--card);
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.category-title.active{
+    border-left:4px solid var(--accent);
+    background:#2a4a68;
+}
+
+.docs{
+    margin-top:6px;
+    margin-left:12px;
+}
+
+.doc{
+    padding:9px 10px;
+    margin-bottom:6px;
+    border-radius:6px;
+    background:#243c52;
+    cursor:pointer;
+}
+
+.doc.active{
+    background:#345a78;
+}
+
+.content{
+    flex:1;
+    padding:20px;
+}
+
+.actions{
+    margin-bottom:10px;
+}
+
+.editor{
+    width:100%;
+    height:calc(100% - 50px);
+    padding:18px;
+    background:var(--panel);
+    border-radius:12px;
+    overflow-y:auto;
+    display:none; /* 🔴 oculto por defecto */
+}
+
+mark{
+    background:var(--highlight);
+    color:black;
+    padding:2px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <input type="text" placeholder="Buscar dentro del documento..." oninput="buscarDentro(this.value)">
+    <div class="user">
+        <img src="https://i.gyazo.com/e488a2f0f0c45f8c96bd46efc50bf240.png">
+        Thalia Rowen
+    </div>
+</header>
+
+<div class="main">
+
+<aside class="sidebar">
+    <div class="buttons">
+        <button class="new-cat" onclick="nuevaCategoria()">+ Categoría</button>
+        <button class="new-doc" onclick="nuevoDocumento()">+ Documento</button>
+    </div>
+    <div id="lista"></div>
+</aside>
+
+<section class="content">
+    <div class="actions">
+        <button class="save" onclick="guardar()">Guardar</button>
+        <button class="delete" onclick="eliminar()">Eliminar</button>
+    </div>
+    <div id="editor" class="editor" contenteditable="false"></div>
+</section>
+
+</div>
+
+<script>
+let data = JSON.parse(localStorage.getItem("emsDocs")) || {};
+let categoriasAbiertas = {};
+let categoriaActual = null;
+let docActual = null;
+let htmlOriginal = "";
+
+const lista = document.getElementById("lista");
+const editor = document.getElementById("editor");
+
+function render(){
+    lista.innerHTML="";
+    Object.keys(data).forEach(cat=>{
+        const c=document.createElement("div");
+        c.className="category";
+
+        const t=document.createElement("div");
+        t.className="category-title"+(cat===categoriaActual?" active":"");
+        t.textContent=cat;
+
+        t.onclick=()=>{
+            categoriaActual=cat;
+            docActual=null;
+            categoriasAbiertas[cat]=!categoriasAbiertas[cat];
+            editor.style.display="none";      // ✅ ocultar editor
+            editor.contentEditable="false";
+            render();
+        };
+
+        c.appendChild(t);
+
+        if(categoriasAbiertas[cat]){
+            const dwrap=document.createElement("div");
+            dwrap.className="docs";
+
+            Object.keys(data[cat]).forEach(d=>{
+                const doc=document.createElement("div");
+                doc.className="doc"+(d===docActual?" active":"");
+                doc.textContent=d;
+                doc.onclick=()=>abrir(cat,d);
+                dwrap.appendChild(doc);
+            });
+
+            c.appendChild(dwrap);
+        }
+
+        lista.appendChild(c);
+    });
+}
+
+function nuevaCategoria(){
+    const n=prompt("Nombre de la categoría:");
+    if(!n||data[n])return;
+    data[n]={};
+    categoriasAbiertas[n]=true;
+    categoriaActual=n;
+    guardarStorage();
+    render();
+}
+
+function nuevoDocumento(){
+    if(!categoriaActual)return alert("Selecciona una categoría");
+    const n=prompt("Nombre del documento:");
+    if(!n||data[categoriaActual][n])return;
+    data[categoriaActual][n]="";
+    abrir(categoriaActual,n);
+}
+
+function abrir(cat,doc){
+    categoriaActual=cat;
+    docActual=doc;
+    categoriasAbiertas[cat]=true;
+    editor.style.display="block";     // ✅ mostrar editor
+    editor.contentEditable="true";
+    editor.innerHTML=data[cat][doc];
+    htmlOriginal=editor.innerHTML;
+    render();
+}
+
+function guardar(){
+    if(!categoriaActual||!docActual)return;
+    data[categoriaActual][docActual]=editor.innerHTML;
+    htmlOriginal=editor.innerHTML;
+    guardarStorage();
+}
+
+function eliminar(){
+    if(docActual){
+        if(!confirm(`¿Eliminar documento "${docActual}"?`))return;
+        delete data[categoriaActual][docActual];
+        docActual=null;
+    }else if(categoriaActual){
+        if(!confirm(`¿Eliminar categoría "${categoriaActual}" y todo su contenido?`))return;
+        delete data[categoriaActual];
+        categoriaActual=null;
+    }else return;
+
+    editor.style.display="none";
+    editor.contentEditable="false";
+    guardarStorage();
+    render();
+}
+
+function guardarStorage(){
+    localStorage.setItem("emsDocs",JSON.stringify(data));
+}
+
+function buscarDentro(txt){
+    if(!docActual)return;
+    if(!txt){
+        editor.innerHTML=htmlOriginal;
+        return;
+    }
+    const regex=new RegExp(`(${txt})`,"gi");
+    editor.innerHTML=htmlOriginal.replace(regex,"<mark>$1</mark>");
+}
+
+render();
+</script>
+
+</body>
+</html>
