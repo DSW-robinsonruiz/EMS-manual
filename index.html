@@ -10,7 +10,6 @@
     --panel:#162635;
     --card:#1e3346;
     --text:#e5e7eb;
-    --muted:#94a3b8;
     --accent:#3b82f6;
     --danger:#ef4444;
     --success:#22c55e;
@@ -24,6 +23,49 @@ body{
     background:var(--bg);
     color:var(--text);
 }
+
+/* LOGIN */
+.login{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.login-box{
+    background:var(--panel);
+    padding:30px;
+    border-radius:14px;
+    width:320px;
+    text-align:center;
+}
+
+.login-box h2{
+    margin-bottom:20px;
+}
+
+.login-box input{
+    width:100%;
+    padding:10px;
+    margin-bottom:10px;
+    border:none;
+    border-radius:8px;
+    background:#0f1f2d;
+    color:white;
+}
+
+.login-box button{
+    width:100%;
+    padding:10px;
+    margin-top:8px;
+    border:none;
+    border-radius:8px;
+    color:white;
+    cursor:pointer;
+}
+
+.btn-login{background:var(--accent);}
+.btn-create{background:var(--success);}
 
 /* HEADER */
 header{
@@ -47,14 +89,21 @@ header input{
     display:flex;
     align-items:center;
     gap:12px;
-    font-size:17px;
+    font-size:16px;
     font-weight:600;
 }
 
 .user img{
-    width:44px;
-    height:44px;
+    width:40px;
+    height:40px;
     border-radius:50%;
+}
+
+.logout{
+    background:var(--danger);
+    padding:6px 10px;
+    border-radius:6px;
+    font-size:14px;
 }
 
 /* LAYOUT */
@@ -148,11 +197,25 @@ button{
 
 <body>
 
+<!-- LOGIN -->
+<div id="login" class="login">
+    <div class="login-box">
+        <h2>EMS Manual</h2>
+        <input id="userInput" placeholder="Nombre de usuario">
+        <button class="btn-login" onclick="login()">Iniciar sesión</button>
+        <button class="btn-create" onclick="crearUsuario()">Crear usuario</button>
+    </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+
 <header>
     <input type="text" placeholder="Buscar documento EMS..." oninput="buscarPorTitulo(this.value)">
     <div class="user">
         <img src="https://i.gyazo.com/e488a2f0f0c45f8c96bd46efc50bf240.png">
-        Thalia Rowen
+        <span id="nombreUsuario"></span>
+        <button class="logout" onclick="cerrarSesion()">Salir</button>
     </div>
 </header>
 
@@ -175,9 +238,61 @@ button{
 </section>
 
 </div>
+</div>
 
 <script>
-let data = JSON.parse(localStorage.getItem("emsDocs")) || {};
+/* ========= USUARIOS ========= */
+let usuarios = JSON.parse(localStorage.getItem("emsUsers")) || [];
+let usuario = localStorage.getItem("emsUserActual");
+let data = {};
+
+function crearUsuario(){
+    const u=document.getElementById("userInput").value.trim();
+    if(!u) return alert("Escribe un nombre");
+
+    if(usuarios.includes(u)){
+        alert("Ese usuario ya existe");
+        return;
+    }
+
+    usuarios.push(u);
+    localStorage.setItem("emsUsers",JSON.stringify(usuarios));
+    alert("Usuario creado correctamente. Ahora inicia sesión.");
+    document.getElementById("userInput").value="";
+}
+
+function login(){
+    const u=document.getElementById("userInput").value.trim();
+    if(!u) return alert("Escribe un nombre");
+
+    if(!usuarios.includes(u)){
+        alert("Usuario no existe. Debes crearlo primero.");
+        return;
+    }
+
+    localStorage.setItem("emsUserActual",u);
+    iniciarApp();
+}
+
+function cerrarSesion(){
+    localStorage.removeItem("emsUserActual");
+    location.reload();
+}
+
+function iniciarApp(){
+    usuario = localStorage.getItem("emsUserActual");
+    document.getElementById("login").style.display="none";
+    document.getElementById("app").style.display="block";
+    document.getElementById("nombreUsuario").textContent=usuario;
+    data = JSON.parse(localStorage.getItem("emsDocs_"+usuario)) || {};
+    render();
+}
+
+if(usuario){
+    iniciarApp();
+}
+
+/* ========= APP ========= */
 let categoriasAbiertas = {};
 let categoriaActual = null;
 let docActual = null;
@@ -185,7 +300,6 @@ let docActual = null;
 const lista = document.getElementById("lista");
 const editor = document.getElementById("editor");
 
-/* RENDER */
 function render(){
     lista.innerHTML="";
     Object.keys(data).forEach(cat=>{
@@ -201,7 +315,6 @@ function render(){
             docActual=null;
             categoriasAbiertas[cat]=!categoriasAbiertas[cat];
             editor.style.display="none";
-            editor.contentEditable="false";
             render();
         };
 
@@ -210,7 +323,6 @@ function render(){
         if(categoriasAbiertas[cat]){
             const dwrap=document.createElement("div");
             dwrap.className="docs";
-
             Object.keys(data[cat]).forEach(d=>{
                 const doc=document.createElement("div");
                 doc.className="doc"+(d===docActual?" active":"");
@@ -218,7 +330,6 @@ function render(){
                 doc.onclick=()=>abrir(cat,d);
                 dwrap.appendChild(doc);
             });
-
             c.appendChild(dwrap);
         }
 
@@ -226,7 +337,6 @@ function render(){
     });
 }
 
-/* CRUD */
 function nuevaCategoria(){
     const n=prompt("Nombre de la categoría:");
     if(!n||data[n])return;
@@ -244,16 +354,13 @@ function nuevoDocumento(){
 }
 
 function abrir(cat,doc){
-    categoriasAbiertas = {};
-    categoriasAbiertas[cat] = true;
-
+    categoriasAbiertas={};
+    categoriasAbiertas[cat]=true;
     categoriaActual=cat;
     docActual=doc;
-
     editor.style.display="block";
     editor.contentEditable="true";
     editor.innerHTML=data[cat][doc];
-
     render();
 }
 
@@ -265,35 +372,26 @@ function guardar(){
 
 function eliminar(){
     if(docActual){
-        if(!confirm(`¿Eliminar documento "${docActual}"?`))return;
         delete data[categoriaActual][docActual];
         docActual=null;
     }else if(categoriaActual){
-        if(!confirm(`¿Eliminar categoría "${categoriaActual}" y todo su contenido?`))return;
         delete data[categoriaActual];
         categoriaActual=null;
-    }else return;
-
+    }
     editor.style.display="none";
-    editor.contentEditable="false";
     guardarStorage();
     render();
 }
 
 function guardarStorage(){
-    localStorage.setItem("emsDocs",JSON.stringify(data));
+    localStorage.setItem("emsDocs_"+usuario,JSON.stringify(data));
 }
 
-/* 🔍 BUSCADOR GLOBAL POR TÍTULO */
 function buscarPorTitulo(txt){
-    const q = txt.trim().toLowerCase();
-
+    const q=txt.trim().toLowerCase();
     if(!q){
-        categoriasAbiertas = {};
-        categoriaActual = null;
-        docActual = null;
+        categoriasAbiertas={};
         editor.style.display="none";
-        editor.contentEditable="false";
         render();
         return;
     }
@@ -307,8 +405,6 @@ function buscarPorTitulo(txt){
         }
     }
 }
-
-render();
 </script>
 
 </body>
