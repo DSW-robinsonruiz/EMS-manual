@@ -152,7 +152,7 @@ mark{
 <body>
 
 <header>
-    <input type="text" placeholder="Buscar en todo el manual EMS..." oninput="buscarGlobal(this.value)">
+    <input type="text" placeholder="Buscar documento EMS..." oninput="buscarPorTitulo(this.value)">
     <div class="user">
         <img src="https://i.gyazo.com/e488a2f0f0c45f8c96bd46efc50bf240.png">
         Thalia Rowen
@@ -285,21 +285,24 @@ function guardarStorage(){
 }
 
 /* 🔍 BUSCADOR GLOBAL */
-function buscarGlobal(txt){
-    if(!txt)return;
+function buscarPorTitulo(txt){
+    if(!txt) return;
 
     const q = txt.toLowerCase();
+    let mejorCoincidencia = null;
 
     for(const cat in data){
         for(const doc in data[cat]){
-            const contenido = data[cat][doc].toLowerCase();
-            if(doc.toLowerCase().includes(q) || contenido.includes(q)){
-                abrir(cat,doc);
-                const regex=new RegExp(`(${txt})`,"gi");
-                editor.innerHTML = htmlOriginal.replace(regex,"<mark>$1</mark>");
-                return;
+            if(doc.toLowerCase().includes(q)){
+                mejorCoincidencia = {cat, doc};
+                break;
             }
         }
+        if(mejorCoincidencia) break;
+    }
+
+    if(mejorCoincidencia){
+        abrir(mejorCoincidencia.cat, mejorCoincidencia.doc);
     }
 }
 
@@ -308,3 +311,4 @@ render();
 
 </body>
 </html>
+
