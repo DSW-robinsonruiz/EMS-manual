@@ -140,12 +140,6 @@ button{
     overflow-y:auto;
     display:none;
 }
-
-mark{
-    background:var(--highlight);
-    color:black;
-    padding:2px;
-}
 </style>
 </head>
 
@@ -184,7 +178,6 @@ let data = JSON.parse(localStorage.getItem("emsDocs")) || {};
 let categoriasAbiertas = {};
 let categoriaActual = null;
 let docActual = null;
-let htmlOriginal = "";
 
 const lista = document.getElementById("lista");
 const editor = document.getElementById("editor");
@@ -249,18 +242,17 @@ function nuevoDocumento(){
 function abrir(cat,doc){
     categoriaActual=cat;
     docActual=doc;
+    categoriasAbiertas = {};
     categoriasAbiertas[cat]=true;
     editor.style.display="block";
     editor.contentEditable="true";
     editor.innerHTML=data[cat][doc];
-    htmlOriginal=editor.innerHTML;
     render();
 }
 
 function guardar(){
     if(!categoriaActual||!docActual)return;
     data[categoriaActual][docActual]=editor.innerHTML;
-    htmlOriginal=editor.innerHTML;
     guardarStorage();
 }
 
@@ -284,11 +276,20 @@ function guardarStorage(){
     localStorage.setItem("emsDocs",JSON.stringify(data));
 }
 
-/* 🔍 BUSCADOR GLOBAL */
+/* 🔍 BUSCADOR GLOBAL SOLO POR TÍTULO */
 function buscarPorTitulo(txt){
-    if(!txt) return;
+    const q = txt.trim().toLowerCase();
 
-    const q = txt.toLowerCase();
+    // Si está vacío, cerrar todo
+    if(!q){
+        categoriaActual = null;
+        docActual = null;
+        categoriasAbiertas = {};
+        editor.style.display = "none";
+        render();
+        return;
+    }
+
     let mejorCoincidencia = null;
 
     for(const cat in data){
@@ -311,4 +312,3 @@ render();
 
 </body>
 </html>
-
