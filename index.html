@@ -138,7 +138,7 @@ button{
     background:var(--panel);
     border-radius:12px;
     overflow-y:auto;
-    display:none; /* 🔴 oculto por defecto */
+    display:none;
 }
 
 mark{
@@ -152,7 +152,7 @@ mark{
 <body>
 
 <header>
-    <input type="text" placeholder="Buscar dentro del documento..." oninput="buscarDentro(this.value)">
+    <input type="text" placeholder="Buscar en todo el manual EMS..." oninput="buscarGlobal(this.value)">
     <div class="user">
         <img src="https://i.gyazo.com/e488a2f0f0c45f8c96bd46efc50bf240.png">
         Thalia Rowen
@@ -203,8 +203,7 @@ function render(){
             categoriaActual=cat;
             docActual=null;
             categoriasAbiertas[cat]=!categoriasAbiertas[cat];
-            editor.style.display="none";      // ✅ ocultar editor
-            editor.contentEditable="false";
+            editor.style.display="none";
             render();
         };
 
@@ -251,7 +250,7 @@ function abrir(cat,doc){
     categoriaActual=cat;
     docActual=doc;
     categoriasAbiertas[cat]=true;
-    editor.style.display="block";     // ✅ mostrar editor
+    editor.style.display="block";
     editor.contentEditable="true";
     editor.innerHTML=data[cat][doc];
     htmlOriginal=editor.innerHTML;
@@ -277,7 +276,6 @@ function eliminar(){
     }else return;
 
     editor.style.display="none";
-    editor.contentEditable="false";
     guardarStorage();
     render();
 }
@@ -286,14 +284,23 @@ function guardarStorage(){
     localStorage.setItem("emsDocs",JSON.stringify(data));
 }
 
-function buscarDentro(txt){
-    if(!docActual)return;
-    if(!txt){
-        editor.innerHTML=htmlOriginal;
-        return;
+/* 🔍 BUSCADOR GLOBAL */
+function buscarGlobal(txt){
+    if(!txt)return;
+
+    const q = txt.toLowerCase();
+
+    for(const cat in data){
+        for(const doc in data[cat]){
+            const contenido = data[cat][doc].toLowerCase();
+            if(doc.toLowerCase().includes(q) || contenido.includes(q)){
+                abrir(cat,doc);
+                const regex=new RegExp(`(${txt})`,"gi");
+                editor.innerHTML = htmlOriginal.replace(regex,"<mark>$1</mark>");
+                return;
+            }
+        }
     }
-    const regex=new RegExp(`(${txt})`,"gi");
-    editor.innerHTML=htmlOriginal.replace(regex,"<mark>$1</mark>");
 }
 
 render();
