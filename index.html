@@ -241,12 +241,23 @@ button{
 </div>
 
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+
 /* ========= USUARIOS ========= */
 let usuarios = JSON.parse(localStorage.getItem("emsUsers")) || [];
 let usuario = localStorage.getItem("emsUserActual");
 let data = {};
 
-function crearUsuario(){
+/* ========= APP ========= */
+let categoriasAbiertas = {};
+let categoriaActual = null;
+let docActual = null;
+
+const lista = document.getElementById("lista");
+const editor = document.getElementById("editor");
+
+/* ---------- USUARIOS ---------- */
+window.crearUsuario = function(){
     const u=document.getElementById("userInput").value.trim();
     if(!u) return alert("Escribe un nombre");
 
@@ -261,7 +272,7 @@ function crearUsuario(){
     document.getElementById("userInput").value="";
 }
 
-function login(){
+window.login = function(){
     const u=document.getElementById("userInput").value.trim();
     if(!u) return alert("Escribe un nombre");
 
@@ -274,7 +285,7 @@ function login(){
     iniciarApp();
 }
 
-function cerrarSesion(){
+window.cerrarSesion = function(){
     localStorage.removeItem("emsUserActual");
     location.reload();
 }
@@ -284,6 +295,7 @@ function iniciarApp(){
     document.getElementById("login").style.display="none";
     document.getElementById("app").style.display="block";
     document.getElementById("nombreUsuario").textContent=usuario;
+
     data = JSON.parse(localStorage.getItem("emsDocs_"+usuario)) || {};
     render();
 }
@@ -292,14 +304,7 @@ if(usuario){
     iniciarApp();
 }
 
-/* ========= APP ========= */
-let categoriasAbiertas = {};
-let categoriaActual = null;
-let docActual = null;
-
-const lista = document.getElementById("lista");
-const editor = document.getElementById("editor");
-
+/* ---------- RENDER ---------- */
 function render(){
     lista.innerHTML="";
     Object.keys(data).forEach(cat=>{
@@ -337,7 +342,8 @@ function render(){
     });
 }
 
-function nuevaCategoria(){
+/* ---------- ACCIONES ---------- */
+window.nuevaCategoria = function(){
     const n=prompt("Nombre de la categoría:");
     if(!n||data[n])return;
     data[n]={};
@@ -345,7 +351,7 @@ function nuevaCategoria(){
     render();
 }
 
-function nuevoDocumento(){
+window.nuevoDocumento = function(){
     if(!categoriaActual)return alert("Selecciona una categoría");
     const n=prompt("Nombre del documento:");
     if(!n||data[categoriaActual][n])return;
@@ -364,13 +370,13 @@ function abrir(cat,doc){
     render();
 }
 
-function guardar(){
+window.guardar = function(){
     if(!categoriaActual||!docActual)return;
     data[categoriaActual][docActual]=editor.innerHTML;
     guardarStorage();
 }
 
-function eliminar(){
+window.eliminar = function(){
     if(docActual){
         delete data[categoriaActual][docActual];
         docActual=null;
@@ -387,7 +393,7 @@ function guardarStorage(){
     localStorage.setItem("emsDocs_"+usuario,JSON.stringify(data));
 }
 
-function buscarPorTitulo(txt){
+window.buscarPorTitulo = function(txt){
     const q=txt.trim().toLowerCase();
     if(!q){
         categoriasAbiertas={};
@@ -405,6 +411,8 @@ function buscarPorTitulo(txt){
         }
     }
 }
+
+});
 </script>
 
 </body>
