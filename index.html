@@ -14,7 +14,6 @@
     --accent:#3b82f6;
     --danger:#ef4444;
     --success:#22c55e;
-    --highlight:#facc15;
 }
 
 *{box-sizing:border-box;}
@@ -26,6 +25,7 @@ body{
     color:var(--text);
 }
 
+/* HEADER */
 header{
     display:flex;
     justify-content:space-between;
@@ -57,11 +57,13 @@ header input{
     border-radius:50%;
 }
 
+/* LAYOUT */
 .main{
     display:flex;
     height:calc(100vh - 64px);
 }
 
+/* SIDEBAR */
 .sidebar{
     width:340px;
     background:var(--panel);
@@ -122,6 +124,7 @@ button{
     background:#345a78;
 }
 
+/* CONTENT */
 .content{
     flex:1;
     padding:20px;
@@ -182,6 +185,7 @@ let docActual = null;
 const lista = document.getElementById("lista");
 const editor = document.getElementById("editor");
 
+/* RENDER */
 function render(){
     lista.innerHTML="";
     Object.keys(data).forEach(cat=>{
@@ -197,6 +201,7 @@ function render(){
             docActual=null;
             categoriasAbiertas[cat]=!categoriasAbiertas[cat];
             editor.style.display="none";
+            editor.contentEditable="false";
             render();
         };
 
@@ -221,12 +226,11 @@ function render(){
     });
 }
 
+/* CRUD */
 function nuevaCategoria(){
     const n=prompt("Nombre de la categoría:");
     if(!n||data[n])return;
     data[n]={};
-    categoriasAbiertas[n]=true;
-    categoriaActual=n;
     guardarStorage();
     render();
 }
@@ -240,13 +244,16 @@ function nuevoDocumento(){
 }
 
 function abrir(cat,doc){
+    categoriasAbiertas = {};
+    categoriasAbiertas[cat] = true;
+
     categoriaActual=cat;
     docActual=doc;
-    categoriasAbiertas = {};
-    categoriasAbiertas[cat]=true;
+
     editor.style.display="block";
     editor.contentEditable="true";
     editor.innerHTML=data[cat][doc];
+
     render();
 }
 
@@ -268,6 +275,7 @@ function eliminar(){
     }else return;
 
     editor.style.display="none";
+    editor.contentEditable="false";
     guardarStorage();
     render();
 }
@@ -276,34 +284,27 @@ function guardarStorage(){
     localStorage.setItem("emsDocs",JSON.stringify(data));
 }
 
-/* 🔍 BUSCADOR GLOBAL SOLO POR TÍTULO */
+/* 🔍 BUSCADOR GLOBAL POR TÍTULO */
 function buscarPorTitulo(txt){
     const q = txt.trim().toLowerCase();
 
-    // Si está vacío, cerrar todo
     if(!q){
+        categoriasAbiertas = {};
         categoriaActual = null;
         docActual = null;
-        categoriasAbiertas = {};
-        editor.style.display = "none";
+        editor.style.display="none";
+        editor.contentEditable="false";
         render();
         return;
     }
 
-    let mejorCoincidencia = null;
-
     for(const cat in data){
         for(const doc in data[cat]){
             if(doc.toLowerCase().includes(q)){
-                mejorCoincidencia = {cat, doc};
-                break;
+                abrir(cat,doc);
+                return;
             }
         }
-        if(mejorCoincidencia) break;
-    }
-
-    if(mejorCoincidencia){
-        abrir(mejorCoincidencia.cat, mejorCoincidencia.doc);
     }
 }
 
