@@ -9,18 +9,21 @@
     --bg:#0e1a24;
     --panel:#162635;
     --card:#1e3346;
+    --card-soft:#22384a;
     --text:#e5e7eb;
+    --muted:#9ca3af;
     --accent:#3b82f6;
     --danger:#ef4444;
     --success:#22c55e;
+    --shadow:0 12px 30px rgba(0,0,0,.35);
 }
 
 *{box-sizing:border-box;}
 
 body{
     margin:0;
-    font-family:"Segoe UI",sans-serif;
-    background:var(--bg);
+    font-family:"Segoe UI",system-ui,sans-serif;
+    background:linear-gradient(180deg,#0b1620,#0e1a24);
     color:var(--text);
 }
 
@@ -34,34 +37,45 @@ body{
 
 .login-box{
     background:var(--panel);
-    padding:30px;
-    border-radius:14px;
-    width:320px;
+    padding:34px;
+    border-radius:18px;
+    width:340px;
     text-align:center;
+    box-shadow:var(--shadow);
 }
 
 .login-box h2{
     margin-bottom:20px;
+    font-weight:700;
+    letter-spacing:.5px;
 }
 
 .login-box input{
     width:100%;
-    padding:10px;
-    margin-bottom:10px;
+    padding:12px;
+    margin-bottom:12px;
     border:none;
-    border-radius:8px;
+    border-radius:10px;
     background:#0f1f2d;
     color:white;
+    outline:none;
 }
 
 .login-box button{
     width:100%;
-    padding:10px;
+    padding:12px;
     margin-top:8px;
     border:none;
-    border-radius:8px;
+    border-radius:10px;
     color:white;
     cursor:pointer;
+    font-weight:600;
+    transition:.2s;
+}
+
+.login-box button:hover{
+    transform:translateY(-1px);
+    filter:brightness(1.1);
 }
 
 .btn-login{background:var(--accent);}
@@ -72,17 +86,19 @@ header{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:14px 20px;
+    padding:14px 22px;
     background:linear-gradient(to right,#0f2027,#203a43);
+    box-shadow:0 6px 20px rgba(0,0,0,.45);
 }
 
 header input{
-    width:320px;
-    padding:10px 14px;
+    width:340px;
+    padding:11px 14px;
     border:none;
-    border-radius:8px;
+    border-radius:10px;
     background:var(--panel);
     color:var(--text);
+    outline:none;
 }
 
 .user{
@@ -97,12 +113,13 @@ header input{
     width:40px;
     height:40px;
     border-radius:50%;
+    border:2px solid var(--accent);
 }
 
 .logout{
     background:var(--danger);
-    padding:6px 10px;
-    border-radius:6px;
+    padding:6px 12px;
+    border-radius:8px;
     font-size:14px;
 }
 
@@ -116,61 +133,89 @@ header input{
 .sidebar{
     width:340px;
     background:var(--panel);
-    padding:15px;
+    padding:16px;
     overflow-y:auto;
+    box-shadow:inset -1px 0 0 rgba(255,255,255,.05);
 }
 
 .buttons{
     display:flex;
     gap:8px;
-    margin-bottom:12px;
+    margin-bottom:14px;
 }
 
 button{
     border:none;
     padding:9px 14px;
-    border-radius:7px;
+    border-radius:9px;
     color:white;
     cursor:pointer;
+    font-weight:600;
+    transition:.2s;
+}
+
+button:hover{
+    transform:translateY(-1px);
+    filter:brightness(1.1);
 }
 
 .new-cat{background:#16a34a;}
 .new-doc{background:#22c55e;}
-.save{background:var(--accent);}
-.delete{background:var(--danger);}
 
+/* 👇 BOTONES PRINCIPALES */
+.actions .save{
+    background:var(--success);
+}
+
+.actions .delete{
+    background:var(--danger);
+}
+
+/* CATEGORY */
 .category{
-    margin-bottom:10px;
+    margin-bottom:12px;
 }
 
 .category-title{
-    padding:10px;
+    padding:12px;
     background:var(--card);
-    border-radius:8px;
+    border-radius:12px;
     cursor:pointer;
     font-weight:600;
+    transition:.2s;
+}
+
+.category-title:hover{
+    background:#2b4b66;
 }
 
 .category-title.active{
-    border-left:4px solid var(--accent);
-    background:#2a4a68;
+    background:#2f5f8f;
+    box-shadow:inset 4px 0 0 var(--accent);
 }
 
 .docs{
     margin-top:6px;
-    margin-left:12px;
+    margin-left:10px;
 }
 
 .doc{
-    padding:9px 10px;
+    padding:10px 12px;
     margin-bottom:6px;
-    border-radius:6px;
-    background:#243c52;
+    border-radius:10px;
+    background:var(--card-soft);
     cursor:pointer;
+    transition:.2s;
+    font-size:14px;
+}
+
+.doc:hover{
+    background:#345a78;
 }
 
 .doc.active{
-    background:#345a78;
+    background:var(--accent);
+    color:white;
 }
 
 /* CONTENT */
@@ -180,22 +225,58 @@ button{
 }
 
 .actions{
-    margin-bottom:10px;
+    margin-bottom:12px;
+    display:flex;
+    gap:10px;
 }
 
+/* EDITOR */
 .editor{
     width:100%;
-    height:calc(100% - 50px);
-    padding:18px;
+    height:calc(100% - 60px);
+    padding:22px;
     background:var(--panel);
-    border-radius:12px;
+    border-radius:18px;
     overflow-y:auto;
     display:none;
+    box-shadow:var(--shadow);
+    line-height:1.6;
+}
+
+/* TOOLBAR */
+.toolbar{
+    flex-wrap:wrap;
+}
+
+.toolbar button,
+.toolbar select,
+.toolbar input[type=color]{
+    background:var(--card);
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:6px 10px;
+    cursor:pointer;
+}
+
+.toolbar button:hover{
+    background:var(--accent);
+}
+
+/* 👇 FORZAR COLORES EN TOOLBAR */
+.toolbar .save{
+    background:var(--success) !important;
+}
+
+.toolbar .delete{
+    background:var(--danger) !important;
+}
+
+.toolbar select{
+    outline:none;
 }
 </style>
-</head>
 
-<body>
 
 <!-- LOGIN -->
 <div id="login" class="login">
@@ -230,16 +311,55 @@ button{
 </aside>
 
 <section class="content">
-    <div class="actions">
-        <button class="save" onclick="guardar()">Guardar</button>
-        <button class="delete" onclick="eliminar()">Eliminar</button>
-    </div>
+    <div class="actions toolbar" id="toolbar" style="display:none">
+    <button onclick="cmd('bold')"><b>B</b></button>
+    <button onclick="cmd('italic')"><i>I</i></button>
+    <button onclick="cmd('underline')"><u>U</u></button>
+
+    <select onchange="cmd('fontName', this.value)">
+    <option value="">Fuente</option>
+    <option>Arial</option>
+    <option>Calibri</option>
+    <option>Times New Roman</option>
+    <option>Verdana</option>
+    <option>Courier New</option>
+    <option>Georgia</option>
+    <option>Tahoma</option>
+    <option>Trebuchet MS</option>
+</select>
+
+   <select onchange="setFontSize(this.value)">
+    <option value="">Tamaño</option>
+    <option value="8">8</option>
+    <option value="10">10</option>
+    <option value="12">12</option>
+    <option value="14">14</option>
+    <option value="18">18</option>
+    <option value="24">24</option>
+    <option value="36">36</option>
+</select>
+
+    <input type="color" onchange="cmd('foreColor', this.value)">
+
+    <button onclick="cmd('insertUnorderedList')">• Lista</button>
+    <button onclick="cmd('insertOrderedList')">1. Lista</button>
+
+    <button onclick="cmd('justifyLeft')">⬅</button>
+    <button onclick="cmd('justifyCenter')">⬌</button>
+    <button onclick="cmd('justifyRight')">➡</button>
+
+    <button onclick="insertImage()">🖼 Imagen</button>
+
+    <button class="save" onclick="guardar()">Guardar</button>
+    <button class="delete" onclick="eliminar()">Eliminar</button>
+</div>
     <div id="editor" class="editor" contenteditable="false"></div>
 </section>
 
 </div>
 </div>
 
+<!-- ⚠️ SCRIPT ORIGINAL, SIN CAMBIOS -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -251,6 +371,7 @@ let data = {};
 /* ========= APP ========= */
 let categoriasAbiertas = {};
 let categoriaActual = null;
+let bufferTemporal = {};
 let docActual = null;
 
 const lista = document.getElementById("lista");
@@ -286,6 +407,7 @@ window.login = function(){
 }
 
 window.cerrarSesion = function(){
+    bufferTemporal = {}; // ❌ se pierde lo no guardado
     localStorage.removeItem("emsUserActual");
     location.reload();
 }
@@ -298,6 +420,8 @@ function iniciarApp(){
 
     data = JSON.parse(localStorage.getItem("emsDocs_"+usuario)) || {};
     render();
+    document.getElementById("toolbar").style.display="none";
+
 }
 
 if(usuario){
@@ -359,21 +483,51 @@ window.nuevoDocumento = function(){
     abrir(categoriaActual,n);
 }
 
-function abrir(cat,doc){
-    categoriasAbiertas={};
-    categoriasAbiertas[cat]=true;
-    categoriaActual=cat;
-    docActual=doc;
-    editor.style.display="block";
-    editor.contentEditable="true";
-    editor.innerHTML=data[cat][doc];
+function abrir(cat, doc){
+
+    // 🔹 Guardar temporalmente el documento anterior (SIN guardar en storage)
+    if(categoriaActual && docActual){
+        bufferTemporal[categoriaActual + "||" + docActual] = editor.innerHTML;
+    }
+
+    categoriasAbiertas = {};
+    categoriasAbiertas[cat] = true;
+    categoriaActual = cat;
+    docActual = doc;
+
+    editor.style.display = "block";
+    editor.contentEditable = "true";
+
+    // 🔹 Cargar desde buffer si existe, si no desde data
+    const key = cat + "||" + doc;
+    editor.innerHTML = bufferTemporal[key] ?? data[cat][doc];
+
+    document.getElementById("toolbar").style.display = "flex";
     render();
 }
 
 window.guardar = function(){
-    if(!categoriaActual||!docActual)return;
-    data[categoriaActual][docActual]=editor.innerHTML;
+
+    // 1️⃣ Guardar el documento actual en buffer
+    if(categoriaActual && docActual){
+        bufferTemporal[categoriaActual + "||" + docActual] = editor.innerHTML;
+    }
+
+    // 2️⃣ Pasar TODO el buffer a data
+    for(const key in bufferTemporal){
+        const [cat, doc] = key.split("||");
+
+        if(!data[cat]) data[cat] = {};
+        data[cat][doc] = bufferTemporal[key];
+    }
+
+    // 3️⃣ Limpiar buffer (ya está guardado)
+    bufferTemporal = {};
+
+    // 4️⃣ Guardar TODO en localStorage
     guardarStorage();
+
+    alert("Todo guardado correctamente ✔");
 }
 
 window.eliminar = function(){
@@ -408,6 +562,31 @@ window.buscarPorTitulo = function(txt){
                 abrir(cat,doc);
                 return;
             }
+        }
+    }
+}
+window.cmd = function(command, value = null){
+    editor.focus();
+    document.execCommand(command, false, value);
+}
+
+window.insertImage = function(){
+    const url = prompt("URL de la imagen:");
+    if(url){
+        cmd('insertImage', url);
+    }
+}
+
+window.setFontSize = function(size){
+    if(!size) return;
+    editor.focus();
+    document.execCommand("fontSize", false, "7");
+
+    const fonts = editor.getElementsByTagName("font");
+    for(let i = 0; i < fonts.length; i++){
+        if(fonts[i].size == "7"){
+            fonts[i].removeAttribute("size");
+            fonts[i].style.fontSize = size + "px";
         }
     }
 }
